@@ -69,3 +69,4 @@ Without seed data, fallback demo content in `src/App.jsx` is shown until Supabas
 - Public users can read published content and submit forms.
 - Only authenticated users can modify content and storage files.
 - Image upload uses bucket: `portfolio-assets` (or `VITE_SUPABASE_STORAGE_BUCKET`).
+# My_portfolio
