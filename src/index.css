@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #000000;
+  --on-primary: #ffffff;
+  --secondary: #5e5e5e;
+  --on-secondary: #ffffff;
+  --background: #f9f9f9;
+  --on-background: #1a1c1c;
+  --surface: #f9f9f9;
+  --on-surface: #1a1c1c;
+  --surface-variant: #e2e2e2;
+  --on-surface-variant: #4c4546;
+  --outline: #7e7576;
+  --outline-variant: #cfc4c5;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f3f3f4;
+  --surface-container: #eeeeee;
+  --surface-container-high: #e8e8e8;
+  --surface-container-highest: #e2e2e2;
+  --surface-dim: #dadada;
+  --surface-bright: #f9f9f9;
+  --surface-tint: #5e5e5e;
+  --inverse-surface: #2f3131;
+  --inverse-on-surface: #f0f1f1;
+  --inverse-primary: #c6c6c6;
+  --secondary-container: #e1dfdf;
+  --on-secondary-container: #626262;
+  
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error: #ffffff;
+  --on-error-container: #93000a;
+}
+
+.dark {
+  --primary: #ffffff;
+  --on-primary: #2f3131;
+  --secondary: #c6c6cf;
+  --on-secondary: #2f3037;
+  --background: #141313;
+  --on-background: #e5e2e1;
+  --surface: #141313;
+  --on-surface: #e5e2e1;
+  --surface-variant: #353434;
+  --on-surface-variant: #c4c7c8;
+  --outline: #8e9192;
+  --outline-variant: #444748;
+  --surface-container-lowest: #0e0e0e;
+  --surface-container-low: #1c1b1b;
+  --surface-container: #201f1f;
+  --surface-container-high: #2a2a2a;
+  --surface-container-highest: #353434;
+  --surface-dim: #141313;
+  --surface-bright: #3a3939;
+  --surface-tint: #c6c6c7;
+  --inverse-surface: #e5e2e1;
+  --inverse-on-surface: #313030;
+  --inverse-primary: #5d5f5f;
+  --secondary-container: #45464e;
+  --on-secondary-container: #b4b4bd;
+  
+  --error: #ffb4ab;
+  --error-container: #93000a;
+  --on-error: #690005;
+  --on-error-container: #ffdad6;
+}
+
+@theme {
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-background: var(--background);
+  --color-on-background: var(--on-background);
+  --color-surface: var(--surface);
+  --color-on-surface: var(--on-surface);
+  --color-surface-variant: var(--surface-variant);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-tint: var(--surface-tint);
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-inverse-primary: var(--inverse-primary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-error: var(--error);
+  --color-error-container: var(--error-container);
+  --color-on-error: var(--on-error);
+  --color-on-error-container: var(--on-error-container);
+
+  /* Spacing */
+  --spacing-stack-md: 24px;
+  --spacing-margin-desktop: 48px;
+  --spacing-gutter: 24px;
+  --spacing-unit: 4px;
+  --spacing-container-max: 1200px;
+  --spacing-section-gap: 96px;
+  --spacing-margin-mobile: 16px;
+  --spacing-stack-lg: 48px;
+  --spacing-stack-sm: 12px;
+  --spacing-margin-edge: 4rem;
+  --spacing-stack-xl: 8rem;
+
+  /* Font Families */
+  --font-body-lg: "Inter", sans-serif;
+  --font-code-block: "JetBrains Mono", monospace;
+  --font-label-sm: "JetBrains Mono", monospace;
+  --font-headline-md: "Plus Jakarta Sans", sans-serif;
+  --font-display-lg: "Plus Jakarta Sans", sans-serif;
+  --font-display-lg-mobile: "Plus Jakarta Sans", sans-serif;
+  --font-body-md: "Inter", sans-serif;
+  --font-display-xl: "Plus Jakarta Sans", sans-serif;
+  --font-headline-lg: "Plus Jakarta Sans", sans-serif;
+}
+
+/* Material symbols font configuration */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.bento-card:hover .project-image {
+  transform: scale(1.05);
+}
+
+.project-image {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.border-thin {
+  border-width: 0.5px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
