@@ -235,9 +235,9 @@ export const api = {
 
   // Messages (Contact Form)
   sendMessage: async (messageData) => {
-    const { data, error } = await supabase.from('messages').insert([mapMessageToDb(messageData)]).select().single();
+    const { error } = await supabase.from('messages').insert([mapMessageToDb(messageData)]);
     if (error) throw normalizeError(error, 'Erreur lors de l\'envoi du message');
-    return ok(mapMessageFromDb(data), 'Message envoyé');
+    return ok(null, 'Message envoyé');
   },
   getMessages: async () => {
     const data = await runSelect(
@@ -260,9 +260,9 @@ export const api = {
   // Bookings (Call scheduling)
   sendBooking: async (bookingData) => {
     const payload = { ...bookingData, status: bookingData.status || 'pending' };
-    const { data, error } = await supabase.from('bookings').insert([payload]).select().single();
+    const { error } = await supabase.from('bookings').insert([payload]);
     if (error) throw normalizeError(error, 'Erreur lors de la création du rendez-vous');
-    return ok(data, 'Rendez-vous créé');
+    return ok(null, 'Rendez-vous créé');
   },
   getBookings: async () => {
     const data = await runSelect(
