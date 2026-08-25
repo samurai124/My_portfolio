@@ -21,6 +21,7 @@ function Footer({ copy }) {
               {[
                 { id: 'home', label: copy.nav.home },
                 { id: 'projects', label: copy.nav.projects },
+                { id: 'skills', label: copy.nav.skills },
                 { id: 'services', label: copy.nav.services },
                 { id: 'about', label: copy.nav.about }
               ].map(item => (

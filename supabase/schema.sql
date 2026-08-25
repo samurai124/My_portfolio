@@ -68,6 +68,18 @@ create table if not exists public.blogs (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.skills (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  category text not null,
+  level int not null default 90,
+  icon text,
+  featured boolean not null default true,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.profile (
   id uuid primary key default gen_random_uuid(),
   full_name text,
@@ -143,6 +155,11 @@ create trigger set_blogs_updated_at
 before update on public.blogs
 for each row execute function public.set_updated_at();
 
+drop trigger if exists set_skills_updated_at on public.skills;
+create trigger set_skills_updated_at
+before update on public.skills
+for each row execute function public.set_updated_at();
+
 drop trigger if exists set_profile_updated_at on public.profile;
 create trigger set_profile_updated_at
 before update on public.profile
@@ -156,6 +173,7 @@ alter table public.services enable row level security;
 alter table public.testimonials enable row level security;
 alter table public.faqs enable row level security;
 alter table public.blogs enable row level security;
+alter table public.skills enable row level security;
 alter table public.profile enable row level security;
 alter table public.messages enable row level security;
 alter table public.bookings enable row level security;
@@ -185,6 +203,11 @@ create policy if not exists "public read blogs"
 on public.blogs for select
 to anon, authenticated
 using (published = true or auth.role() = 'authenticated');
+
+create policy if not exists "public read skills"
+on public.skills for select
+to anon, authenticated
+using (true);
 
 create policy if not exists "public read profile"
 on public.profile for select
@@ -218,6 +241,12 @@ with check (true);
 
 create policy if not exists "auth manage blogs"
 on public.blogs for all
+to authenticated
+using (true)
+with check (true);
+
+create policy if not exists "auth manage skills"
+on public.skills for all
 to authenticated
 using (true)
 with check (true);
@@ -299,3 +328,28 @@ create policy if not exists "auth delete portfolio assets"
 on storage.objects for delete
 to authenticated
 using (bucket_id = 'portfolio-assets');
+
+-- ----------------------------
+-- Sample / Initial Skills Seeds
+-- ----------------------------
+insert into public.skills (name, category, level, icon, featured, sort_order)
+values
+  ('React.js', 'Frontend', 95, 'code', true, 1),
+  ('JavaScript (ES6+)', 'Frontend', 92, 'javascript', true, 2),
+  ('TypeScript', 'Frontend', 85, 'code', true, 3),
+  ('Tailwind CSS & Modern UI', 'Frontend', 90, 'palette', true, 4),
+  ('HTML5 & Responsive CSS', 'Frontend', 95, 'web', false, 5),
+  ('Java Spring Boot', 'Backend', 90, 'terminal', true, 6),
+  ('PHP & Laravel', 'Backend', 88, 'data_object', true, 7),
+  ('RESTful API & Security (JWT)', 'Backend', 92, 'lock', true, 8),
+  ('Microservices & MVC', 'Backend', 85, 'hub', false, 9),
+  ('PostgreSQL', 'Database', 88, 'database', true, 10),
+  ('MySQL', 'Database', 90, 'database', true, 11),
+  ('Supabase & BaaS', 'Database', 86, 'storage', true, 12),
+  ('Docker & Containerization', 'DevOps & Cloud', 86, 'deployed_code', true, 13),
+  ('CI/CD Pipelines (GitHub Actions)', 'DevOps & Cloud', 82, 'sync_alt', true, 14),
+  ('Linux & Cloud Deployment', 'DevOps & Cloud', 80, 'cloud_upload', false, 15),
+  ('Git & GitHub Workflow', 'Tools', 92, 'fork_right', true, 16),
+  ('Postman & API Testing', 'Tools', 90, 'send_time_extension', true, 17),
+  ('Agile / Scrum & Clean Code', 'Tools', 88, 'check_circle', false, 18)
+on conflict do nothing;

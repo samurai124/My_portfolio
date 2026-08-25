@@ -13,8 +13,22 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
   // Data states
   const [projects, setProjects] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [skills, setSkills] = useState([]);
   const [messages, setMessages] = useState([]);
   const [bookings, setBookings] = useState([]);
+
+  // Skills Modal / Edit State
+  const [skillModalOpen, setSkillModalOpen] = useState(false);
+  const [editingSkill, setEditingSkill] = useState(null);
+  const [skillsCategoryFilter, setSkillsCategoryFilter] = useState('All');
+  const [skillForm, setSkillForm] = useState({
+    name: '',
+    category: 'Frontend',
+    level: 90,
+    icon: 'code',
+    featured: true,
+    sort_order: 1
+  });
 
   // Project Modal / Edit State
   const [projectModalOpen, setProjectModalOpen] = useState(false);
@@ -57,15 +71,17 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      const [projRes, blogRes, msgRes, bookRes] = await Promise.allSettled([
+      const [projRes, blogRes, skillRes, msgRes, bookRes] = await Promise.allSettled([
         api.getProjects(),
         api.getBlogs('All', true),
+        api.getSkills('All'),
         api.getMessages(),
         api.getBookings()
       ]);
 
       if (projRes.status === 'fulfilled' && projRes.value.data) setProjects(projRes.value.data);
       if (blogRes.status === 'fulfilled' && blogRes.value.data) setBlogs(blogRes.value.data);
+      if (skillRes.status === 'fulfilled' && skillRes.value.data) setSkills(skillRes.value.data);
       if (msgRes.status === 'fulfilled' && msgRes.value.data) setMessages(msgRes.value.data);
       if (bookRes.status === 'fulfilled' && bookRes.value.data) setBookings(bookRes.value.data);
     } catch {
@@ -285,6 +301,73 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
     }
   };
 
+  // ---------------- SKILL ACTIONS ----------------
+  const openNewSkillModal = () => {
+    setEditingSkill(null);
+    setSkillForm({
+      name: '',
+      category: 'Frontend',
+      level: 90,
+      icon: 'code',
+      featured: true,
+      sort_order: skills.length + 1
+    });
+    setSkillModalOpen(true);
+  };
+
+  const openEditSkillModal = (s) => {
+    setEditingSkill(s);
+    setSkillForm({
+      name: s.name || '',
+      category: s.category || 'Frontend',
+      level: typeof s.level === 'number' ? s.level : 90,
+      icon: s.icon || 'terminal',
+      featured: s.featured ?? true,
+      sort_order: s.sort_order ?? 1
+    });
+    setSkillModalOpen(true);
+  };
+
+  const handleSaveSkill = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: skillForm.name.trim(),
+        category: skillForm.category,
+        level: Number(skillForm.level),
+        icon: skillForm.icon,
+        featured: Boolean(skillForm.featured),
+        sort_order: Number(skillForm.sort_order) || 0
+      };
+
+      if (editingSkill) {
+        await api.updateSkill(editingSkill._id || editingSkill.id, payload);
+        showToast('Compétence mise à jour avec succès !', 'success');
+      } else {
+        await api.createSkill(payload);
+        showToast('Nouvelle compétence ajoutée avec succès !', 'success');
+      }
+
+      setSkillModalOpen(false);
+      fetchDashboardData();
+      if (onRefreshData) onRefreshData();
+    } catch (err) {
+      showToast(err.message || 'Erreur lors de la sauvegarde de la compétence', 'error');
+    }
+  };
+
+  const handleDeleteSkill = async (id) => {
+    if (!window.confirm('Voulez-vous vraiment supprimer cette compétence ?')) return;
+    try {
+      await api.deleteSkill(id);
+      showToast('Compétence supprimée', 'info');
+      fetchDashboardData();
+      if (onRefreshData) onRefreshData();
+    } catch {
+      showToast('Erreur lors de la suppression', 'error');
+    }
+  };
+
   // ---------------- MESSAGE & BOOKING ACTIONS ----------------
   const handleDeleteMessage = async (id) => {
     if (!window.confirm('Supprimer ce message ?')) return;
@@ -330,6 +413,7 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
   const tabs = [
     { id: 'overview', label: "Vue d'ensemble", icon: 'dashboard' },
     { id: 'projects', label: 'Projets', icon: 'deployed_code', count: projects.length },
+    { id: 'skills', label: 'Compétences', icon: 'psychology', count: skills.length },
     { id: 'blogs', label: 'Articles Blog', icon: 'article', count: blogs.length },
     { id: 'messages', label: 'Messages', icon: 'mail', count: messages.length },
     { id: 'bookings', label: 'Rendez-vous', icon: 'calendar_month', count: bookings.length },
@@ -427,10 +511,13 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             
-            {/* 4 KPI Metrics Bento Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 5 KPI Metrics Bento Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               
-              <div className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+              <div 
+                onClick={() => setActiveTab('projects')}
+                className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+              >
                 <div className="flex justify-between items-center text-on-surface-variant">
                   <span className="text-[10px] font-mono uppercase tracking-widest">[ Projets ]</span>
                   <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
@@ -439,11 +526,30 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
                 </div>
                 <div className="space-y-0.5">
                   <h3 className="text-3xl font-extrabold text-primary">{projects.length}</h3>
-                  <p className="text-xs text-on-surface-variant font-light">Projets publiés dans le portfolio</p>
+                  <p className="text-xs text-on-surface-variant font-light">Projets publiés</p>
                 </div>
               </div>
 
-              <div className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+              <div 
+                onClick={() => setActiveTab('skills')}
+                className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+              >
+                <div className="flex justify-between items-center text-on-surface-variant">
+                  <span className="text-[10px] font-mono uppercase tracking-widest">[ Compétences ]</span>
+                  <div className="w-8 h-8 rounded-full bg-teal-500/10 text-teal-500 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-sm">psychology</span>
+                  </div>
+                </div>
+                <div className="space-y-0.5">
+                  <h3 className="text-3xl font-extrabold text-primary">{skills.length}</h3>
+                  <p className="text-xs text-on-surface-variant font-light">Compétences actives</p>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => setActiveTab('blogs')}
+                className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+              >
                 <div className="flex justify-between items-center text-on-surface-variant">
                   <span className="text-[10px] font-mono uppercase tracking-widest">[ Articles ]</span>
                   <div className="w-8 h-8 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center">
@@ -452,11 +558,14 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
                 </div>
                 <div className="space-y-0.5">
                   <h3 className="text-3xl font-extrabold text-primary">{blogs.length}</h3>
-                  <p className="text-xs text-on-surface-variant font-light">Articles techniques en ligne</p>
+                  <p className="text-xs text-on-surface-variant font-light">Articles en ligne</p>
                 </div>
               </div>
 
-              <div className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+              <div 
+                onClick={() => setActiveTab('messages')}
+                className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+              >
                 <div className="flex justify-between items-center text-on-surface-variant">
                   <span className="text-[10px] font-mono uppercase tracking-widest">[ Messages ]</span>
                   <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
@@ -465,11 +574,14 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
                 </div>
                 <div className="space-y-0.5">
                   <h3 className="text-3xl font-extrabold text-primary">{messages.length}</h3>
-                  <p className="text-xs text-on-surface-variant font-light">Demandes reçues via le formulaire</p>
+                  <p className="text-xs text-on-surface-variant font-light">Demandes reçues</p>
                 </div>
               </div>
 
-              <div className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+              <div 
+                onClick={() => setActiveTab('bookings')}
+                className="bg-surface border border-outline-variant/50 rounded-3xl p-6 space-y-3 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+              >
                 <div className="flex justify-between items-center text-on-surface-variant">
                   <span className="text-[10px] font-mono uppercase tracking-widest">[ Rendez-vous ]</span>
                   <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center">
@@ -547,6 +659,17 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
                       <div className="flex items-center gap-2.5">
                         <span className="material-symbols-outlined text-base text-primary">add_circle</span>
                         <span>Publier un Nouveau Projet</span>
+                      </div>
+                      <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                    </button>
+
+                    <button
+                      onClick={openNewSkillModal}
+                      className="w-full bg-surface-container-low hover:bg-surface-container p-3.5 rounded-2xl border border-outline-variant/40 text-xs font-semibold text-primary flex items-center justify-between transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="material-symbols-outlined text-base text-teal-500">psychology</span>
+                        <span>Ajouter une Compétence</span>
                       </div>
                       <span className="material-symbols-outlined text-xs">arrow_forward</span>
                     </button>
@@ -669,7 +792,125 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
           </div>
         )}
 
-        {/* ---------------- 3. BLOGS TAB ---------------- */}
+        {/* ---------------- 3. SKILLS TAB ---------------- */}
+        {activeTab === 'skills' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-on-surface-variant block">
+                  [ Stack &amp; Compétences ]
+                </span>
+                <h3 className="text-xl font-bold text-primary">Gestion des Compétences ({skills.length})</h3>
+              </div>
+
+              <button
+                onClick={openNewSkillModal}
+                className="bg-primary text-on-primary px-5 py-2.5 rounded-full text-xs font-semibold hover:opacity-90 transition-all cursor-pointer flex items-center gap-2 hover:scale-105 shadow-sm"
+              >
+                <span className="material-symbols-outlined text-sm">add</span>
+                <span>Ajouter une Compétence</span>
+              </button>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap gap-1.5 p-1 bg-surface/90 border border-outline-variant/40 rounded-2xl w-fit">
+              {['All', 'Frontend', 'Backend', 'Database', 'DevOps & Cloud', 'Tools'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSkillsCategoryFilter(cat)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                    skillsCategoryFilter === cat
+                      ? 'bg-primary text-on-primary font-bold shadow-sm'
+                      : 'text-on-surface-variant hover:text-primary'
+                  }`}
+                >
+                  {cat === 'All' ? 'Toutes' : cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Skills Bento Grid */}
+            {skills.length === 0 ? (
+              <div className="bg-surface border border-outline-variant/50 rounded-3xl p-12 text-center space-y-4">
+                <span className="material-symbols-outlined text-4xl text-on-surface-variant">psychology</span>
+                <p className="text-xs text-on-surface-variant font-light">Aucune compétence enregistrée pour l'instant.</p>
+                <button
+                  onClick={openNewSkillModal}
+                  className="bg-primary text-on-primary px-5 py-2 rounded-full text-xs font-semibold hover:opacity-90 transition-all cursor-pointer"
+                >
+                  Ajouter votre première compétence
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(skillsCategoryFilter === 'All'
+                  ? skills
+                  : skills.filter(s => s.category?.toLowerCase() === skillsCategoryFilter.toLowerCase())
+                ).map((skill) => (
+                  <div
+                    key={skill._id || skill.id}
+                    className="bg-surface border border-outline-variant/50 rounded-3xl p-5 flex flex-col justify-between space-y-4 hover:border-primary/40 transition-all shadow-sm"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-surface-container flex items-center justify-center text-primary">
+                            <span className="material-symbols-outlined text-base">
+                              {skill.icon || 'terminal'}
+                            </span>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-primary">{skill.name}</h4>
+                            <span className="text-[10px] font-mono text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full">
+                              {skill.category}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="text-xs font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg">
+                          {skill.level}%
+                        </span>
+                      </div>
+
+                      {/* Level Progress Bar */}
+                      <div className="space-y-1">
+                        <div className="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="bg-primary h-full rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(Math.max(skill.level || 0, 5), 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between pt-3 border-t border-outline-variant/30">
+                      <button
+                        onClick={() => openEditSkillModal(skill)}
+                        className="px-3.5 py-1.5 rounded-full border border-outline-variant/60 hover:border-primary text-xs font-semibold text-primary hover:bg-surface-container transition-all cursor-pointer flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-xs">edit</span>
+                        <span>Modifier</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteSkill(skill._id || skill.id)}
+                        className="w-8 h-8 rounded-full border border-red-500/30 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                        title="Supprimer"
+                      >
+                        <span className="material-symbols-outlined text-xs">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* ---------------- 4. BLOGS TAB ---------------- */}
         {activeTab === 'blogs' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             
@@ -1324,6 +1565,140 @@ function AdminDashboard({ isOpen, onClose, user, onLogout, showToast, onRefreshD
                   className="bg-primary text-on-primary px-6 py-2.5 rounded-full text-xs font-bold hover:opacity-90 transition-all cursor-pointer shadow-md hover:scale-105"
                 >
                   {editingBlog ? 'Enregistrer les Modifications' : "Publier l'Article"}
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- SKILL ADD / EDIT MODAL ---------------- */}
+      {skillModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-surface border border-outline-variant/50 w-full max-w-lg max-h-[90vh] overflow-y-auto p-7 md:p-9 rounded-3xl shadow-2xl relative space-y-6">
+            
+            <button
+              onClick={() => setSkillModalOpen(false)}
+              className="absolute right-5 top-5 w-8 h-8 rounded-full border border-outline-variant/60 hover:border-primary flex items-center justify-center text-on-surface-variant hover:text-primary transition-all cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
+
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-on-surface-variant block">
+                [ Studio Compétences ]
+              </span>
+              <h3 className="text-xl font-bold text-primary">
+                {editingSkill ? "Modifier la Compétence" : "Ajouter une Nouvelle Compétence"}
+              </h3>
+            </div>
+
+            <form onSubmit={handleSaveSkill} className="space-y-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono uppercase text-on-surface-variant font-semibold">Nom de la Technologie / Compétence *</label>
+                <input
+                  type="text"
+                  required
+                  value={skillForm.name}
+                  onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })}
+                  placeholder="Ex: React.js, Spring Boot, Docker, PostgreSQL"
+                  className="w-full bg-surface-container/60 border border-outline-variant/50 focus:border-primary rounded-xl p-3 text-xs text-primary focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase text-on-surface-variant font-semibold">Catégorie *</label>
+                  <select
+                    value={skillForm.category}
+                    onChange={(e) => setSkillForm({ ...skillForm, category: e.target.value })}
+                    className="w-full bg-surface-container/60 border border-outline-variant/50 focus:border-primary rounded-xl p-3 text-xs text-primary focus:outline-none"
+                  >
+                    <option value="Frontend">Frontend</option>
+                    <option value="Backend">Backend</option>
+                    <option value="Database">Database</option>
+                    <option value="DevOps & Cloud">DevOps & Cloud</option>
+                    <option value="Tools">Tools &amp; Workflow</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase text-on-surface-variant font-semibold">Icône (Material Symbol)</label>
+                  <input
+                    type="text"
+                    value={skillForm.icon}
+                    onChange={(e) => setSkillForm({ ...skillForm, icon: e.target.value })}
+                    placeholder="code, terminal, database, palette, lock..."
+                    className="w-full bg-surface-container/60 border border-outline-variant/50 focus:border-primary rounded-xl p-3 text-xs text-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 p-4 bg-surface-container-low rounded-2xl border border-outline-variant/40">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-mono uppercase text-primary font-bold">
+                    Niveau de Maîtrise (%)
+                  </label>
+                  <span className="font-mono text-sm font-bold text-primary bg-surface px-2.5 py-0.5 rounded-lg border border-outline-variant/30">
+                    {skillForm.level}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="20"
+                  max="100"
+                  step="1"
+                  value={skillForm.level}
+                  onChange={(e) => setSkillForm({ ...skillForm, level: e.target.value })}
+                  className="w-full cursor-pointer accent-primary"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-on-surface-variant">
+                  <span>20% (Débutant)</span>
+                  <span>50% (Intermédiaire)</span>
+                  <span>100% (Expert)</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase text-on-surface-variant font-semibold">Ordre d'affichage (Sort Order)</label>
+                  <input
+                    type="number"
+                    value={skillForm.sort_order}
+                    onChange={(e) => setSkillForm({ ...skillForm, sort_order: e.target.value })}
+                    placeholder="1"
+                    className="w-full bg-surface-container/60 border border-outline-variant/50 focus:border-primary rounded-xl p-3 text-xs text-primary focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-6">
+                  <input
+                    type="checkbox"
+                    id="skill-featured"
+                    checked={skillForm.featured}
+                    onChange={(e) => setSkillForm({ ...skillForm, featured: e.target.checked })}
+                    className="w-4 h-4 rounded accent-primary cursor-pointer"
+                  />
+                  <label htmlFor="skill-featured" className="text-xs font-semibold text-primary cursor-pointer">
+                    Mettre en avant (Featured)
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-3 border-t border-outline-variant/30">
+                <button
+                  type="button"
+                  onClick={() => setSkillModalOpen(false)}
+                  className="px-5 py-2.5 rounded-full border border-outline-variant/60 hover:border-primary text-xs font-semibold text-primary transition-all cursor-pointer"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="bg-primary text-on-primary px-6 py-2.5 rounded-full text-xs font-bold hover:opacity-90 transition-all cursor-pointer shadow-md hover:scale-105"
+                >
+                  {editingSkill ? 'Enregistrer les Modifications' : 'Ajouter la Compétence'}
                 </button>
               </div>
             </form>

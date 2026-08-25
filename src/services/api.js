@@ -47,7 +47,8 @@ const mapBlogToDb = (blogData) => ({
 
 const mapMessageFromDb = (row) => ({
   ...row,
-  projectType: row.project_type
+  projectType: row.project_type,
+  createdAt: row.created_at
 });
 
 const mapMessageToDb = (messageData) => ({
@@ -231,6 +232,31 @@ export const api = {
     const { error } = await supabase.from('blogs').delete().eq('id', id);
     if (error) throw normalizeError(error, 'Erreur lors de la suppression de l\'article');
     return ok(null, 'Article supprimé');
+  },
+
+  // Skills CRUD
+  getSkills: async (category) => {
+    let query = supabase.from('skills').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true });
+    if (category && category !== 'All') {
+      query = query.eq('category', category);
+    }
+    const data = await runSelect(query, 'Erreur lors du chargement des compétences');
+    return ok(data);
+  },
+  createSkill: async (skillData) => {
+    const { data, error } = await supabase.from('skills').insert([skillData]).select().single();
+    if (error) throw normalizeError(error, 'Erreur lors de la création de la compétence');
+    return ok(data, 'Compétence créée');
+  },
+  updateSkill: async (id, skillData) => {
+    const { data, error } = await supabase.from('skills').update(skillData).eq('id', id).select().single();
+    if (error) throw normalizeError(error, 'Erreur lors de la mise à jour de la compétence');
+    return ok(data, 'Compétence mise à jour');
+  },
+  deleteSkill: async (id) => {
+    const { error } = await supabase.from('skills').delete().eq('id', id);
+    if (error) throw normalizeError(error, 'Erreur lors de la suppression de la compétence');
+    return ok(null, 'Compétence supprimée');
   },
 
   // Messages (Contact Form)

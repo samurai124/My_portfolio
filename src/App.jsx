@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
+import Skills from './components/Skills';
 import Services from './components/Services';
 import About from './components/About';
 import Testimonials from './components/Testimonials';
@@ -21,6 +22,7 @@ const portfolioCopy = {
     nav: {
       home: "Home",
       projects: "Projects",
+      skills: "Skills",
       services: "Services",
       about: "About",
       blog: "Blog",
@@ -47,6 +49,12 @@ const portfolioCopy = {
       description: "Explore practical full-stack work areas, from React interfaces to backend APIs, authentication, databases, and deployment workflows.",
       empty: "No projects match the selected filter.",
       filters: { all: "All" }
+    },
+    skills: {
+      kicker: "[ Technical Stack ]",
+      title: "Skills & Expertise",
+      description: "A comprehensive overview of programming languages, frameworks, databases, and deployment tools I use to build scalable web applications.",
+      filters: { all: "All", tools: "Tools & Workflow" }
     },
     services: {
       kicker: "[ Capabilities ]",
@@ -122,6 +130,7 @@ const portfolioCopy = {
     nav: {
       home: "Accueil",
       projects: "Projets",
+      skills: "Compétences",
       services: "Services",
       about: "Profil",
       blog: "Blog",
@@ -149,8 +158,14 @@ const portfolioCopy = {
       empty: "Aucun projet ne correspond au filtre selectionne.",
       filters: { all: "Tous" }
     },
+    skills: {
+      kicker: "[ Stack Technique ]",
+      title: "Compétences & Outils",
+      description: "Un aperçu complet des langages de programmation, frameworks, bases de données et outils de déploiement que j'utilise pour concevoir des applications web robustes.",
+      filters: { all: "Tous", tools: "Outils & Workflow" }
+    },
     services: {
-      kicker: "[ Competences ]",
+      kicker: "[ Services ]",
       title: "Services",
       description: "Je construis des solutions web pratiques, de l'interface a la base de donnees, avec du code clair, des APIs securisees et des workflows prets pour le deploiement."
     },
@@ -241,6 +256,7 @@ function App() {
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [activeSection, setActiveSection] = useState("home");
   const [projects, setProjects] = useState([]);
+  const [skills, setSkills] = useState([]);
   const [services, setServices] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [faqs, setFaqs] = useState([]);
@@ -289,8 +305,9 @@ function App() {
 
   const loadDynamicContent = async () => {
     try {
-      const [projectsRes, servicesRes, testimonialsRes, faqsRes, blogsRes] = await Promise.allSettled([
+      const [projectsRes, skillsRes, servicesRes, testimonialsRes, faqsRes, blogsRes] = await Promise.allSettled([
         api.getProjects(),
+        api.getSkills('All'),
         api.getServices(),
         api.getTestimonials(),
         api.getFaqs(),
@@ -299,6 +316,9 @@ function App() {
 
       if (projectsRes.status === 'fulfilled' && Array.isArray(projectsRes.value.data) && projectsRes.value.data.length > 0) {
         setProjects(projectsRes.value.data.map(normalizeProject));
+      }
+      if (skillsRes.status === 'fulfilled' && Array.isArray(skillsRes.value.data) && skillsRes.value.data.length > 0) {
+        setSkills(skillsRes.value.data);
       }
       if (servicesRes.status === 'fulfilled' && Array.isArray(servicesRes.value.data) && servicesRes.value.data.length > 0) {
         setServices(servicesRes.value.data.map(normalizeService));
@@ -378,7 +398,7 @@ function App() {
   // Handle active navigation item on scroll
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["home", "projects", "services", "about", "blog"];
+      const sections = ["home", "projects", "skills", "services", "about", "blog"];
       const scrollPosition = window.scrollY + 200;
 
       for (const section of sections) {
@@ -552,6 +572,12 @@ function App() {
           setActiveFilter={setActiveFilter}
           setSelectedProject={setSelectedProject}
           copy={copy}
+        />
+
+        {/* Technical Skills & Expertise */}
+        <Skills 
+          skills={skills} 
+          copy={copy} 
         />
 
         {/* Capabilities Services */}

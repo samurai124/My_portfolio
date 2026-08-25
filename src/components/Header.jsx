@@ -13,6 +13,7 @@ function Header({ darkMode, setDarkMode, setContactOpen, setActiveTab, activeSec
           {[
             { id: "home", label: copy.nav.home },
             { id: "projects", label: copy.nav.projects },
+            { id: "skills", label: copy.nav.skills },
             { id: "services", label: copy.nav.services },
             { id: "about", label: copy.nav.about },
             { id: "blog", label: copy.nav.blog }
