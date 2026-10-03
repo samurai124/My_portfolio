@@ -49,12 +49,12 @@ function Projects({ projects, activeFilter, setActiveFilter, setSelectedProject,
           <div 
             key={project.id} 
             onClick={() => setSelectedProject(project)}
-            className={`group cursor-pointer ${idx % 2 === 1 ? "md:mt-12" : ""}`}
+            className={`group cursor-pointer transition-all duration-500 hover:-translate-y-1.5 ${idx % 2 === 1 ? "md:mt-12" : ""}`}
           >
-            <div className="aspect-[4/3] bg-surface-container overflow-hidden mb-4 border border-outline-variant/20 relative">
+            <div className="aspect-[4/3] bg-surface-container overflow-hidden mb-4 border border-outline-variant/20 relative group-hover:border-primary/40 group-hover:shadow-xl transition-all duration-500">
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity z-10 duration-500"></div>
               <img 
-                className="w-full h-full object-cover project-image grayscale group-hover:grayscale-0 transition-transform duration-500" 
+                className="w-full h-full object-cover project-image grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" 
                 alt={project.title} 
                 src={project.image}
               />

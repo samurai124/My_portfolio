@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Header({ darkMode, setDarkMode, setContactOpen, setActiveTab, activeSection, onOpenAdmin, language, setLanguage, copy }) {
+function Header({ darkMode, setDarkMode, setContactOpen, setActiveTab, activeSection, onOpenAdmin, language, setLanguage, copy, onOpenCv, onOpenCommandPalette }) {
   const cvUrl = 'https://docs.google.com/document/d/1ODKpVIIGCXNVGsjxuZ6ZHz4bE8-KjTEwVXayTTfWFQI/edit?usp=sharing';
 
   return (
@@ -31,20 +31,30 @@ function Header({ darkMode, setDarkMode, setContactOpen, setActiveTab, activeSec
             </a>
           ))}
         </nav>
-        <div className="flex items-center gap-3">
-          <a
-            href={cvUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant text-on-surface-variant bg-surface-container/40 hover:bg-primary hover:text-on-primary hover:border-primary transition-all text-[10px] uppercase tracking-widest font-semibold cursor-pointer"
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Command Palette Trigger */}
+          <button
+            onClick={onOpenCommandPalette}
+            className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-lg border border-outline-variant/60 text-on-surface-variant bg-surface-container/20 hover:border-primary hover:text-primary transition-all text-[11px] font-mono cursor-pointer"
+            title="Open Command Palette (Ctrl+K or ⌘K)"
+            aria-label="Open Command Palette"
+          >
+            <span className="material-symbols-outlined text-sm">search</span>
+            <span className="hidden sm:inline">Search</span>
+            <kbd className="hidden sm:inline px-1 py-0.5 bg-surface-container/80 text-[9px] rounded border border-outline-variant/40 leading-none">⌘K</kbd>
+          </button>
+
+          <button
+            onClick={onOpenCv}
+            className="h-8 px-2.5 hidden md:inline-flex items-center gap-1.5 rounded-lg border border-outline-variant/60 text-on-surface-variant bg-surface-container/20 hover:border-primary hover:text-primary transition-all text-[11px] uppercase tracking-wider font-semibold cursor-pointer"
             aria-label={copy.nav.openCv}
           >
             <span className="material-symbols-outlined text-sm">description</span>
             <span>{copy.nav.cv}</span>
-          </a>
+          </button>
           <button
             onClick={onOpenAdmin}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant text-on-surface-variant bg-surface-container/40 hover:bg-primary hover:text-on-primary hover:border-primary transition-all text-[10px] uppercase tracking-widest font-semibold cursor-pointer"
+            className="h-8 px-2.5 hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-outline-variant/60 text-on-surface-variant bg-surface-container/20 hover:border-primary hover:text-primary transition-all text-[11px] uppercase tracking-wider font-semibold cursor-pointer"
             aria-label={copy.nav.openStudio}
           >
             <span className="material-symbols-outlined text-sm">admin_panel_settings</span>
@@ -52,7 +62,7 @@ function Header({ darkMode, setDarkMode, setContactOpen, setActiveTab, activeSec
           </button>
           <button
             onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
-            className="w-9 h-9 border border-outline-variant flex items-center justify-center rounded-none text-on-surface-variant hover:text-primary hover:border-primary transition-all cursor-pointer font-label-sm text-[10px] uppercase tracking-widest"
+            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-outline-variant/60 text-on-surface-variant hover:border-primary hover:text-primary bg-surface-container/20 transition-all cursor-pointer font-mono text-[11px] font-semibold"
             aria-label={copy.nav.changeLanguage}
             title={copy.nav.changeLanguage}
           >
@@ -60,10 +70,10 @@ function Header({ darkMode, setDarkMode, setContactOpen, setActiveTab, activeSec
           </button>
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="w-9 h-9 border border-outline-variant flex items-center justify-center rounded-none text-on-surface-variant hover:text-primary hover:border-primary transition-all cursor-pointer"
+            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-outline-variant/60 text-on-surface-variant hover:border-primary hover:text-primary bg-surface-container/20 transition-all cursor-pointer"
             aria-label="Toggle Light/Dark Mode"
           >
-            <span className="material-symbols-outlined text-lg">
+            <span className="material-symbols-outlined text-base">
               {darkMode ? 'light_mode' : 'dark_mode'}
             </span>
           </button>
@@ -72,7 +82,7 @@ function Header({ darkMode, setDarkMode, setContactOpen, setActiveTab, activeSec
               setActiveTab("message");
               setContactOpen(true);
             }}
-            className="bg-primary text-on-primary px-4 py-2 rounded-none font-label-sm text-[11px] hover:opacity-90 active:scale-95 transition-all uppercase tracking-widest cursor-pointer"
+            className="h-8 px-3.5 inline-flex items-center justify-center rounded-lg bg-primary text-on-primary text-[11px] hover:opacity-90 active:scale-95 transition-all uppercase tracking-wider font-semibold cursor-pointer shadow-xs"
           >
             {copy.nav.contact} →
           </button>

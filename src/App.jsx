@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
@@ -9,13 +9,17 @@ import Testimonials from './components/Testimonials';
 import Faq from './components/Faq';
 import Blog from './components/Blog';
 import Footer from './components/Footer';
-import ProjectDetailModal from './components/ProjectDetailModal';
-import ContactModal from './components/ContactModal';
-import BlogDetailModal from './components/BlogDetailModal';
-import AdminLoginModal from './components/admin/AdminLoginModal';
-import AdminDashboard from './components/admin/AdminDashboard';
 import api from './services/api';
 import './App.css';
+
+// Lazy-load modals and admin studio to make initial page load instantaneous
+const ProjectDetailModal = lazy(() => import('./components/ProjectDetailModal'));
+const ContactModal = lazy(() => import('./components/ContactModal'));
+const BlogDetailModal = lazy(() => import('./components/BlogDetailModal'));
+const AdminLoginModal = lazy(() => import('./components/admin/AdminLoginModal'));
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
+const CvModal = lazy(() => import('./components/CvModal'));
+const CommandPalette = lazy(() => import('./components/CommandPalette'));
 
 const portfolioCopy = {
   en: {
@@ -264,6 +268,8 @@ function App() {
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
   const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
   const [adminUser, setAdminUser] = useState(null);
+  const [cvModalOpen, setCvModalOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
 
   // Contact Message form state
@@ -345,6 +351,17 @@ function App() {
     localStorage.setItem('language', language);
     document.documentElement.lang = language;
   }, [language]);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   useEffect(() => {
     const restoreAdminSession = async () => {
@@ -559,6 +576,8 @@ function App() {
         language={language}
         setLanguage={setLanguage}
         copy={copy}
+        onOpenCv={() => setCvModalOpen(true)}
+        onOpenCommandPalette={() => setCommandPaletteOpen(true)}
       />
 
       <main className="max-w-7xl mx-auto">
@@ -666,7 +685,8 @@ function App() {
       {/* Footer Branding */}
       <Footer copy={copy} />
 
-      {/* MODALS */}
+      {/* MODALS & PORTALS (Lazy Loaded with Suspense) */}
+      <Suspense fallback={null}>
       <ProjectDetailModal 
         selectedProject={selectedProject}
         setSelectedProject={setSelectedProject}
@@ -722,6 +742,32 @@ function App() {
         showToast={showToast}
         onRefreshData={loadDynamicContent}
       />
+
+        <CvModal
+          isOpen={cvModalOpen}
+          onClose={() => setCvModalOpen(false)}
+        />
+
+        <CommandPalette
+          isOpen={commandPaletteOpen}
+          onClose={() => setCommandPaletteOpen(false)}
+          projects={projects}
+          skills={skills}
+          onSelectProject={(p) => setSelectedProject(p)}
+          onOpenCv={() => setCvModalOpen(true)}
+          onOpenContact={() => {
+            setActiveTab("message");
+            setContactOpen(true);
+          }}
+          onOpenSchedule={() => {
+            setActiveTab("call");
+            setContactOpen(true);
+          }}
+          onToggleTheme={() => setDarkMode(!darkMode)}
+          isDark={darkMode}
+          onOpenStudio={openAdminStudio}
+        />
+      </Suspense>
 
       <div className="fixed right-4 top-20 z-[70] space-y-2 w-[290px] max-w-[80vw] pointer-events-none">
         {toasts.map((toast) => (
